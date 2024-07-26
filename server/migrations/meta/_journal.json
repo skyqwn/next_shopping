@@ -8,6 +8,20 @@
       "when": 1721881663547,
       "tag": "0000_concerned_lucky_pierre",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1721953621268,
+      "tag": "0001_far_ares",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1721980580305,
+      "tag": "0002_equal_celestials",
+      "breakpoints": true
     }
   ]
 }
