@@ -1,7 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAction } from "next-safe-action/hooks";
+
 import {
   Form,
   FormControl,
@@ -12,36 +16,41 @@ import {
   FormMessage,
 } from "../ui/form";
 import AuthCard from "./auth-card";
-import { LoginSchema, LoginType } from "@/types/login-schema";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import Link from "next/link";
-import { emailSignIn } from "@/server/actions/email-signin";
-import { useAction } from "next-safe-action/hooks";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 import FormSuccess from "./form-success";
 import FormError from "./form-error";
 import { useToast } from "../ui/use-toast";
+import {
+  NewPasswordSchema,
+  NewPasswordType,
+} from "@/types/new-password-schema";
+import { newPassword } from "@/server/actions/new-password";
+import { useSearchParams } from "next/navigation";
 
-const LoginForm = () => {
-  const form = useForm<LoginType>({
-    resolver: zodResolver(LoginSchema),
+const NewPasswordForm = () => {
+  const form = useForm<NewPasswordType>({
+    resolver: zodResolver(NewPasswordSchema),
     defaultValues: {
-      email: "",
       password: "",
+      token: "",
     },
   });
+
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const { toast } = useToast();
 
-  const { execute, status, result } = useAction(emailSignIn, {
+  const { execute, status, result } = useAction(newPassword, {
     onSuccess({ data }) {
       if (data?.error) {
         toast({
           variant: "destructive",
-          title: "로그인 실패",
+          title: "비밀번호변경 실패",
           description: data.error,
         });
       }
@@ -55,41 +64,22 @@ const LoginForm = () => {
     },
   });
 
-  const onSubmit = async (values: LoginType) => {
-    execute(values);
+  const onSubmit = async (values: NewPasswordType) => {
+    execute({ password: values.password, token });
     form.reset(values);
   };
 
   return (
     <AuthCard
-      cardTitle="Welcome Back!"
-      backButtonHref="/auth/register"
-      backButtonLable="Create a new account"
+      cardTitle="비밀번호 변경"
+      backButtonHref="/auth/login"
+      backButtonLable="로그인하러 가기"
       showSocial
     >
       <div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div>
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="example@gmail.com"
-                        type="email"
-                        autoComplete="email"
-                      />
-                    </FormControl>
-                    <FormDescription />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="password"
@@ -101,7 +91,7 @@ const LoginForm = () => {
                         {...field}
                         placeholder="********"
                         type="password"
-                        autoComplete="current-password"
+                        disabled={status === "executing"}
                       />
                     </FormControl>
                     <FormDescription />
@@ -122,7 +112,7 @@ const LoginForm = () => {
                 status === "executing" ? "animate-pulse " : ""
               )}
             >
-              {"Login"}
+              {"비밀번호 변경"}
             </Button>
           </form>
         </Form>
@@ -131,4 +121,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default NewPasswordForm;

@@ -46,9 +46,9 @@ const RegisterForm = () => {
 
   return (
     <AuthCard
-      cardTitle="Create an account 🎉"
+      cardTitle="회원가입  🎉"
       backButtonHref="/auth/login"
-      backButtonLable="Already have an account?"
+      backButtonLable="이미 회원이신가요?"
       showSocial
     >
       <div>
@@ -120,7 +120,7 @@ const RegisterForm = () => {
                 status === "executing" ? "animate-pulse " : ""
               )}
             >
-              {"Register"}
+              {"가입하기"}
             </Button>
           </form>
         </Form>

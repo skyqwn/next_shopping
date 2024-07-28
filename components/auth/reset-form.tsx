@@ -1,7 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAction } from "next-safe-action/hooks";
+
 import {
   Form,
   FormControl,
@@ -12,36 +16,32 @@ import {
   FormMessage,
 } from "../ui/form";
 import AuthCard from "./auth-card";
-import { LoginSchema, LoginType } from "@/types/login-schema";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import Link from "next/link";
-import { emailSignIn } from "@/server/actions/email-signin";
-import { useAction } from "next-safe-action/hooks";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 import FormSuccess from "./form-success";
 import FormError from "./form-error";
 import { useToast } from "../ui/use-toast";
+import { ResetSchema, ResetType } from "@/types/reset-schema";
+import { reset } from "@/server/actions/password-reset";
 
-const LoginForm = () => {
-  const form = useForm<LoginType>({
-    resolver: zodResolver(LoginSchema),
+const ResetForm = () => {
+  const form = useForm<ResetType>({
+    resolver: zodResolver(ResetSchema),
     defaultValues: {
       email: "",
-      password: "",
     },
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const { toast } = useToast();
 
-  const { execute, status, result } = useAction(emailSignIn, {
+  const { execute, status, result } = useAction(reset, {
     onSuccess({ data }) {
       if (data?.error) {
         toast({
           variant: "destructive",
-          title: "로그인 실패",
+          title: "비밀번호변경 실패",
           description: data.error,
         });
       }
@@ -55,16 +55,16 @@ const LoginForm = () => {
     },
   });
 
-  const onSubmit = async (values: LoginType) => {
+  const onSubmit = async (values: ResetType) => {
     execute(values);
     form.reset(values);
   };
 
   return (
     <AuthCard
-      cardTitle="Welcome Back!"
-      backButtonHref="/auth/register"
-      backButtonLable="Create a new account"
+      cardTitle="비밀번호를 잊으셨나요?"
+      backButtonHref="/auth/login"
+      backButtonLable="로그인하러 가기"
       showSocial
     >
       <div>
@@ -80,28 +80,10 @@ const LoginForm = () => {
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="example@gmail.com"
+                        placeholder="test@test.com"
                         type="email"
+                        disabled={status === "executing"}
                         autoComplete="email"
-                      />
-                    </FormControl>
-                    <FormDescription />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="********"
-                        type="password"
-                        autoComplete="current-password"
                       />
                     </FormControl>
                     <FormDescription />
@@ -112,7 +94,7 @@ const LoginForm = () => {
               <FormSuccess message={success} />
               <FormError message={error} />
               <Button size={"sm"} variant={"link"}>
-                <Link href={"/auth/reset"}>Forgot your password?</Link>
+                <Link href={"/auth/register"}>회원이 아니신가요?</Link>
               </Button>
             </div>
             <Button
@@ -122,7 +104,7 @@ const LoginForm = () => {
                 status === "executing" ? "animate-pulse " : ""
               )}
             >
-              {"Login"}
+              {"비밀번호변경"}
             </Button>
           </form>
         </Form>
@@ -131,4 +113,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default ResetForm;
