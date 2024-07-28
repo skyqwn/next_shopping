@@ -20,6 +20,8 @@ import { emailSignIn } from "@/server/actions/email-signin";
 import { useAction } from "next-safe-action/hooks";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import FormSuccess from "./form-success";
+import FormError from "./form-error";
 
 const LoginForm = () => {
   const form = useForm<LoginType>({
@@ -30,6 +32,7 @@ const LoginForm = () => {
     },
   });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const { execute, status, result } = useAction(emailSignIn, {
     onSuccess(data) {
@@ -91,6 +94,8 @@ const LoginForm = () => {
                   </FormItem>
                 )}
               />
+              <FormSuccess message={success} />
+              <FormError message={error} />
               <Button size={"sm"} variant={"link"}>
                 <Link href={"/auth/reset"}>Forgot your password?</Link>
               </Button>

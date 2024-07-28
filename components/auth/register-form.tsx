@@ -20,9 +20,12 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { RegisterSchema, RegisterType } from "@/types/register-schema";
 import { emailRegister } from "@/server/actions/email-register";
+import FormSuccess from "./form-success";
+import FormError from "./form-error";
 
 const RegisterForm = () => {
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const form = useForm<RegisterType>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
@@ -33,9 +36,8 @@ const RegisterForm = () => {
   });
   const { execute, status } = useAction(emailRegister, {
     onSuccess({ data }) {
-      if (data?.success) {
-        console.log(data.success);
-      }
+      if (data?.error) setError(data.error);
+      if (data?.success) setSuccess(data.success);
     },
   });
   const onSubmit = async (values: RegisterType) => {
@@ -105,6 +107,8 @@ const RegisterForm = () => {
                   </FormItem>
                 )}
               />
+              <FormSuccess message={success} />
+              <FormError message={error} />
               <Button size={"sm"} variant={"link"}>
                 <Link href={"/auth/reset"}>Forgot your password?</Link>
               </Button>

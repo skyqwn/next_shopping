@@ -22,6 +22,34 @@
       "when": 1721980580305,
       "tag": "0002_equal_celestials",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1722124243433,
+      "tag": "0003_lovely_harrier",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1722124430248,
+      "tag": "0004_perfect_chronomancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1722125588108,
+      "tag": "0005_confused_ricochet",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1722126373725,
+      "tag": "0006_odd_wasp",
+      "breakpoints": true
     }
   ]
 }
