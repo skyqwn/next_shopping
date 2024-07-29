@@ -8,9 +8,9 @@ const Nav = async () => {
   return (
     <header className="py-8">
       <nav>
-        <ul className="flex justify-between">
+        <ul className="flex justify-between items-center">
           <li>
-            <Link href={"/"}>HOME</Link>
+            <Link href={"/"}>NEXT_SHOPPING</Link>
           </li>
           {!session ? (
             <li>
