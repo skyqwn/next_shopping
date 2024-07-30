@@ -16,6 +16,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   callbacks: {
     async session({ session, token }) {
+      token;
       if (session && token.sub) {
         session.user.id = token.sub;
       }
@@ -45,7 +46,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       token.name = exisntgUser.name;
       token.email = exisntgUser.email;
       token.role = exisntgUser.role;
-      token.isTwoFacoterEnabled = exisntgUser.twoFactorEnabled;
+      token.isTwoFactorEnabled = exisntgUser.twoFactorEnabled;
       token.image = exisntgUser.image;
       return token;
     },

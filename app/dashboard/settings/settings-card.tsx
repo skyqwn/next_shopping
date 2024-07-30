@@ -4,13 +4,12 @@ import { Session } from "next-auth";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import Image from "next/image";
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -27,10 +26,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { SettingSchema, SettingType } from "@/types/settings-schema";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
+import { useAction } from "next-safe-action/hooks";
+import { settings } from "@/server/actions/settings";
 
 interface SettingProps {
   session: Session;
@@ -39,20 +40,44 @@ interface SettingProps {
 const SettingsCard = (session: SettingProps) => {
   const [avatarUploading, setAvatarUploading] = useState(false);
 
+  console.log(session.session.user);
+
   const { toast } = useToast();
   const form = useForm<SettingType>({
     resolver: zodResolver(SettingSchema),
     defaultValues: {
-      password: "",
-      newPassword: "",
+      password: undefined,
+      newPassword: undefined,
       name: session.session.user?.name || undefined,
       email: session.session.user?.email || undefined,
-      // isTwoFactorEnabled: session.session.user?.isTwoFactorEnable || undefined
+      image: session.session.user.image || undefined,
+      isTwoFactorEnabled: session.session.user?.isTwoFactorEnabled || undefined,
+    },
+  });
+
+  const { execute, status } = useAction(settings, {
+    onSuccess: ({ data }) => {
+      if (data?.error) {
+        toast({
+          variant: "destructive",
+          title: "업데이트 실패!",
+          description: data.error,
+        });
+      }
+      if (data?.success) {
+        toast({
+          variant: "default",
+          title: "업데이트 성공! 🎉",
+          description: data?.success,
+        });
+      }
     },
   });
 
   const onSubmit = (values: SettingType) => {
-    // execute(values);
+    console.log(values);
+    execute(values);
+    form.reset(values);
   };
 
   return (
@@ -86,7 +111,7 @@ const SettingsCard = (session: SettingProps) => {
               name="image"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Image</FormLabel>
                   <div className="flex items-center gap-4">
                     {!form.getValues("image") && (
                       <div className="font-bold">
@@ -120,11 +145,14 @@ const SettingsCard = (session: SettingProps) => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>비밀번호</FormLabel>
+                  <FormLabel>현재 비밀번호</FormLabel>
                   <FormControl>
                     <Input
+                      type="password"
                       placeholder="********"
-                      disabled={status === "executing"}
+                      disabled={
+                        status === "executing" || session.session.user.isOAuth
+                      }
                       {...field}
                     />
                   </FormControl>
@@ -140,8 +168,11 @@ const SettingsCard = (session: SettingProps) => {
                   <FormLabel>새 비밀번호</FormLabel>
                   <FormControl>
                     <Input
+                      type="password"
                       placeholder="********"
-                      disabled={status === "executing"}
+                      disabled={
+                        status === "executing" || session.session.user.isOAuth
+                      }
                       {...field}
                     />
                   </FormControl>
@@ -159,7 +190,14 @@ const SettingsCard = (session: SettingProps) => {
                     계정에 대해 2가지 요소 인증 사용
                   </FormDescription>
                   <FormControl>
-                    <Switch disabled={status === "executing"} />
+                    <Switch
+                      disabled={
+                        status === "executing" ||
+                        session.session.user.isOAuth === true
+                      }
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

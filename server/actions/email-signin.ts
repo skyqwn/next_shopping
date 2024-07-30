@@ -1,12 +1,17 @@
 "use server";
 
+import { eq } from "drizzle-orm";
+
+import { db } from "..";
 import { actionClient } from "@/lib/actionClient";
 import { LoginSchema } from "@/types/login-schema";
-import { db } from "..";
-import { eq } from "drizzle-orm";
-import { users } from "../schema";
-import { generateEmailVerificationToken } from "./tokens";
-import { sendVerificationEmail } from "./email";
+import { twoFactorTokens, users } from "../schema";
+import {
+  generateEmailVerificationToken,
+  generateTwoFactorToken,
+  getTwoFactorTokenByEmail,
+} from "./tokens";
+import { sendTwoFactorTokenByEmail, sendVerificationEmail } from "./email";
 import { signIn } from "../auth";
 import { AuthError } from "next-auth";
 
@@ -30,7 +35,53 @@ export const emailSignIn = actionClient
           verificationToken[0].email,
           verificationToken[0].token
         );
-        return { success: "가입된 이메일 인증을 먼저 해주세요!" };
+        return {
+          success:
+            "이메일을 전송하였습니다. 가입한 이메일을 먼저 인증 해주세요!",
+        };
+      }
+
+      if (existingUser.twoFactorEnabled && existingUser.email) {
+        if (code) {
+          const twoFactorToken = await getTwoFactorTokenByEmail(
+            existingUser.email
+          );
+          if (!twoFactorToken) {
+            return { error: "토큰이 존재하지 않습니다." };
+          }
+          if (twoFactorToken.token !== code) {
+            return { error: "토큰이 존재하지 않습니다." };
+          }
+          const hasExpired = new Date(twoFactorToken.expires) < new Date();
+          if (hasExpired) {
+            return {
+              error: "토큰 유효기간이 완료되었습니다. 다시 시도해주세요.",
+            };
+          }
+          await db
+            .delete(twoFactorTokens)
+            .where(eq(twoFactorTokens.id, twoFactorToken.id));
+
+          const existingConfirmation = await getTwoFactorTokenByEmail(
+            existingUser.email
+          );
+
+          if (existingConfirmation) {
+            await db
+              .delete(twoFactorTokens)
+              .where(eq(twoFactorTokens.email, existingUser.email));
+          }
+        } else {
+          const token = await generateTwoFactorToken(existingUser.email);
+          if (!token) {
+            return { error: "토큰을 생성하지 못하였습니다 다시 시도해주세요." };
+          }
+
+          await sendTwoFactorTokenByEmail(token[0].email, token[0].token);
+          return {
+            twoFactor: "이중보안 토큰을 가입된 이메일로 전송하였습니다.",
+          };
+        }
       }
 
       await signIn("credentials", {

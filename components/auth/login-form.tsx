@@ -11,6 +11,14 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+
 import AuthCard from "./auth-card";
 import { LoginSchema, LoginType } from "@/types/login-schema";
 import { Input } from "../ui/input";
@@ -34,6 +42,7 @@ const LoginForm = () => {
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
   const { toast } = useToast();
 
   const { execute, status, result } = useAction(emailSignIn, {
@@ -52,6 +61,7 @@ const LoginForm = () => {
           description: data?.success,
         });
       }
+      if (data?.twoFactor) setShowTwoFactor(true);
     },
   });
 
@@ -62,67 +72,104 @@ const LoginForm = () => {
 
   return (
     <AuthCard
-      cardTitle="Welcome Back!"
+      cardTitle="환영합니다!"
       backButtonHref="/auth/register"
-      backButtonLable="Create a new account"
+      backButtonLable="새 계정 만들기"
       showSocial
     >
       <div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div>
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="example@gmail.com"
-                        type="email"
-                        autoComplete="email"
-                      />
-                    </FormControl>
-                    <FormDescription />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        placeholder="********"
-                        type="password"
-                        autoComplete="current-password"
-                      />
-                    </FormControl>
-                    <FormDescription />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {showTwoFactor && (
+                <FormField
+                  control={form.control}
+                  name="code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>가입된 이메일로 코드를 확인해주세요</FormLabel>
+                      <FormControl>
+                        <InputOTP
+                          disabled={status === "executing"}
+                          {...field}
+                          maxLength={6}
+                        >
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                          </InputOTPGroup>
+                          <InputOTPSeparator />
+                          <InputOTPGroup>
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                            <InputOTPSlot index={5} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </FormControl>
+                      <FormDescription />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {!showTwoFactor && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="example@gmail.com"
+                            type="email"
+                            autoComplete="email"
+                          />
+                        </FormControl>
+                        <FormDescription />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="********"
+                            type="password"
+                            autoComplete="current-password"
+                          />
+                        </FormControl>
+                        <FormDescription />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
               <FormSuccess message={success} />
               <FormError message={error} />
-              <Button size={"sm"} variant={"link"}>
+              <Button size={"sm"} className="px-0" variant={"link"}>
                 <Link href={"/auth/reset"}>Forgot your password?</Link>
               </Button>
             </div>
             <Button
               type="submit"
               className={cn(
-                "w-full my-2",
+                "w-full my-4",
                 status === "executing" ? "animate-pulse " : ""
               )}
             >
-              {"Login"}
+              {showTwoFactor ? "인증하기" : "로그인"}
             </Button>
           </form>
         </Form>
