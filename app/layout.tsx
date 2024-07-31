@@ -3,8 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/navigation/nav";
 import { cn } from "@/lib/utils";
-import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,8 +23,8 @@ export default function RootLayout({
       <body className={cn(inter.className, "px-6 md:px-12 max-w-7xl mx-auto")}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Nav />
-          {children}
           <Toaster />
+          {children}
         </ThemeProvider>
       </body>
     </html>

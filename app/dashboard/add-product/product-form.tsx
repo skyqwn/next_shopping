@@ -26,12 +26,43 @@ import Tiptap from "./tiptap";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction } from "next-safe-action/hooks";
 import { createProduct } from "@/server/actions/create-product";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
-import { useRouter } from "next/navigation";
+import { getProduct } from "@/server/actions/get-products";
+import { useEffect } from "react";
 
 const ProductForm = () => {
-  const { toast } = useToast();
   const router = useRouter();
+  const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const editMode = searchParams.get("id");
+
+  const checkProduct = async (id: number) => {
+    if (editMode) {
+      const { error, success, product } = await getProduct(id);
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: error,
+        });
+        router.push("/dashboard/products");
+        return;
+      }
+      if (success) {
+        const id = parseInt(editMode);
+        form.setValue("title", product.title);
+        form.setValue("description", product.description);
+        form.setValue("price", product.price);
+        form.setValue("id", id);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (editMode) {
+      checkProduct(parseInt(editMode));
+    }
+  }, []);
 
   const form = useForm<ProductType>({
     resolver: zodResolver(ProductSchema),
@@ -58,7 +89,7 @@ const ProductForm = () => {
           title: "제품등록 성공! 🎉",
           description: data?.success,
         });
-        router.push(`/product/${data?.product?.id}`);
+        router.push(`/dashboard/products`);
       }
     },
   });
@@ -69,8 +100,12 @@ const ProductForm = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Card Title</CardTitle>
-        <CardDescription>Card Description</CardDescription>
+        <CardTitle>{editMode ? "제품 수정" : "제품 등록"}</CardTitle>
+        <CardDescription>
+          {editMode
+            ? "등록된 상품의 정보를 수정하세요."
+            : "새로운 상품을 등록해주세요."}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -133,7 +168,7 @@ const ProductForm = () => {
               }
               type="submit"
             >
-              등록하기
+              {editMode ? "수정하기" : "등록하기"}
             </Button>
           </form>
         </Form>
