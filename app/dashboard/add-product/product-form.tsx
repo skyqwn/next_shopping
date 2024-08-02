@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { ProductSchema, ProductType } from "@/types/product-schema";
+import { ProductSchema, zProductType } from "@/types/product-schema";
 
 import {
   Card,
@@ -37,6 +37,16 @@ const ProductForm = () => {
   const searchParams = useSearchParams();
   const editMode = searchParams.get("id");
 
+  const form = useForm<zProductType>({
+    resolver: zodResolver(ProductSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      price: 0,
+    },
+    mode: "onChange",
+  });
+
   const checkProduct = async (id: number) => {
     if (editMode) {
       const { error, success, product } = await getProduct(id);
@@ -64,16 +74,6 @@ const ProductForm = () => {
     }
   }, []);
 
-  const form = useForm<ProductType>({
-    resolver: zodResolver(ProductSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      price: 0,
-    },
-    mode: "onChange",
-  });
-
   const { execute, status } = useAction(createProduct, {
     onSuccess: ({ data }) => {
       if (data?.error) {
@@ -94,7 +94,7 @@ const ProductForm = () => {
     },
   });
 
-  const onSubmit = (values: ProductType) => {
+  const onSubmit = (values: zProductType) => {
     execute(values);
   };
   return (

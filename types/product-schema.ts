@@ -1,3 +1,4 @@
+import { InferSelectModel } from "drizzle-orm";
 import * as z from "zod";
 
 export const ProductSchema = z.object({
@@ -11,4 +12,4 @@ export const ProductSchema = z.object({
     .positive({ message: "가격은 양수여야합니다." }),
 });
 
-export type ProductType = z.infer<typeof ProductSchema>;
+export type zProductType = z.infer<typeof ProductSchema>;
