@@ -8,7 +8,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -17,7 +16,7 @@ import { Switch } from "@/components/ui/switch";
 
 import { LogOut, Moon, Settings, Sun, TruckIcon } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const UserButton = ({ user }: Session) => {
@@ -36,10 +35,14 @@ const UserButton = ({ user }: Session) => {
     }
   }
 
+  useEffect(() => {
+    setSwitchState();
+  }, []);
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger>
-        <Avatar>
+        <Avatar className="size-8">
           {user?.image && (
             <Image
               src={user.image}
@@ -63,7 +66,7 @@ const UserButton = ({ user }: Session) => {
             <Image
               src={user.image}
               alt={user.name!}
-              className="rounded-full"
+              className="rounded-full size-10"
               width={36}
               height={36}
             />

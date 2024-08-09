@@ -192,6 +192,7 @@ const ProductVariant = forwardRef<HTMLDivElement, ProductVariantProps>(
                 {editMode && variant && (
                   <Button
                     variant={"destructive"}
+                    disabled={variantAction.status === "executing"}
                     type="button"
                     onClick={(e) => {
                       e.preventDefault();
@@ -201,7 +202,14 @@ const ProductVariant = forwardRef<HTMLDivElement, ProductVariantProps>(
                     Delete Variant
                   </Button>
                 )}
-                <Button type="submit">
+                <Button
+                  disabled={
+                    status === "executing" ||
+                    !form.formState.isValid ||
+                    !form.formState.isDirty
+                  }
+                  type="submit"
+                >
                   {editMode ? "Update Variant" : "Create Variant"}
                 </Button>
               </div>

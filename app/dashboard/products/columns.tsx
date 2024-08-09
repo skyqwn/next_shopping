@@ -102,7 +102,6 @@ export const columns: ColumnDef<ProductColumn>[] = [
     header: "Variants",
     cell: ({ row }) => {
       const variants = row.getValue("variants") as VariantsWithImagesTags[];
-      console.log(variants);
       return (
         <div className="flex gap-2">
           {variants.map((variant) => (

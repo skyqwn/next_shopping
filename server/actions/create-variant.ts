@@ -3,9 +3,17 @@
 import { actionClient } from "@/lib/actionClient";
 import { VariantSchema } from "@/types/variant-schema";
 import { db } from "..";
-import { productVariants, variantImages, variantTags } from "../schema";
+import {
+  products,
+  productVariants,
+  variantImages,
+  variantTags,
+} from "../schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { algoliaClient } from "@/lib/algoliaIndex";
+
+const algoliaIndex = algoliaClient.initIndex("products");
 
 export const createVariant = actionClient
   .schema(VariantSchema)
@@ -60,6 +68,13 @@ export const createVariant = actionClient
             );
           }
 
+          algoliaIndex.partialUpdateObject({
+            objectID: editVariant[0].id.toString(),
+            id: editVariant[0].productId,
+            productType: editVariant[0].productType,
+            variantImages: newImgs[0].url,
+          });
+
           revalidatePath(`/dashboard/products`);
           return { success: `Edited ${productType}` };
         }
@@ -73,6 +88,10 @@ export const createVariant = actionClient
               productId,
             })
             .returning();
+
+          const product = await db.query.products.findFirst({
+            where: eq(products.id, productId),
+          });
 
           await db.insert(variantTags).values(
             tags.map((tag) => ({
@@ -89,6 +108,18 @@ export const createVariant = actionClient
               order: idx,
             }))
           );
+
+          if (product) {
+            algoliaIndex.saveObject({
+              objectID: newVariant[0].id.toString(),
+              id: newVariant[0].productId,
+              title: product.title,
+              price: product.price,
+              productType: newVariant[0].productType,
+              variantImages: newImgs[0].url,
+            });
+          }
+
           revalidatePath("/dashboard/products");
           return { success: `Added ${productType}` };
         }
